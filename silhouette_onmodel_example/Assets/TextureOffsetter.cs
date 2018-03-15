@@ -8,8 +8,10 @@ public class TextureOffsetter : MonoBehaviour {
 	private Vector2[] scroll_origoffsets;
 
 	//inspector-settable scroll speed that acts as a manual multiplier
-	[Range(0.0f,5.0f)]
+	[Range(-3.0f,3.0f)]
 	public float local_scroll_speed;
+	//scroll speed multiplier set through player interaction
+	private float multiplier;
 
 	//material information
 	private Material[] mats;
@@ -17,8 +19,13 @@ public class TextureOffsetter : MonoBehaviour {
 	private int num_mats;
 
 	//inspector-settable array to set the speeds for the scrolling textures
-	[Range(0.0f,1.0f)]
+	[Range(-1.0f,1.0f)]
 	public float[] scroll_speeds;
+
+	//stored original position on the x-z plane of this gameobject
+	private Vector2 position_horiz;
+	//position of the player on the x-z plane (use main camera position)
+	private Vector2 player_horiz;
 
 	// Use this for initialization
 	void Start () {
@@ -29,26 +36,25 @@ public class TextureOffsetter : MonoBehaviour {
 
 		scroll_origoffsets = new Vector2[num_mats];
 
-//		scroll_speeds[0] = 0.1f;
-//		scroll_speeds[1] = 0.2f;
-//		scroll_speeds[2] = 0.0f;
-//		scroll_speeds[3] = 0.0f;
-//		scroll_speeds[4] = 0.0f;
-//		scroll_speeds[5] = 0.0f;
-//		scroll_speeds[6] = 0.0f;
-//		scroll_speeds[7] = 0.0f;
-//		scroll_speeds[8] = 0.0f;
+		position_horiz = new Vector2(transform.position.x, transform.position.z);
 
+		//get original offsets set in the editor for each texture attached
 		for(int i=0; i<num_mats; i++){
 			scroll_origoffsets[i] = mats[i].GetTextureOffset("_MainTex");
 		}
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 
+		player_horiz = new Vector2(Camera.main.transform.position.x, Camera.main.transform.position.z);
+		multiplier = 1.0f/(Vector2.Distance(position_horiz, player_horiz));
+
+		//float offset_previous = ;
+		//float offset_new = ;
+
 		for(int i=0; i<num_mats; i++){
-			float offset = Time.time * scroll_speeds[i];
+			float offset = (mats[i].GetTextureOffset("_MainTex").x) + (Time.deltaTime * multiplier * local_scroll_speed * scroll_speeds[i]);
 			mats[i].SetTextureOffset("_MainTex", new Vector2(offset, scroll_origoffsets[i].y));
 		}
 		
